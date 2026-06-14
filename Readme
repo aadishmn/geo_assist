@@ -1,92 +1,63 @@
-# 🌍 GeoAssist — AI-Powered Geographic Data Quality Framework on Databricks
+<div align="center">
 
-> **GeoAssist is a reusable, configuration-driven framework that leverages Large Language Models (LLMs) to automatically detect, validate, and correct geographic data quality issues directly within Databricks.**
->
-> Eliminate manual cleansing, reduce dependency on domain experts, and standardize geographic attributes such as cities, states, and countries at scale.
+# 🌍 GeoAssist
+
+### AI-Powered Geographic Data Quality Framework on Databricks
+
+Detect • Validate • Standardize • Correct Geographic Data Using LLMs
+
+![Databricks](https://img.shields.io/badge/Databricks-FF3621?style=for-the-badge&logo=databricks&logoColor=white)
+![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)
+![Apache Spark](https://img.shields.io/badge/Apache_Spark-E25A1C?style=for-the-badge&logo=apachespark&logoColor=white)
+![LLM Powered](https://img.shields.io/badge/LLM-Powered-success?style=for-the-badge)
+
+</div>
 
 ---
 
-##  Why GeoAssist?
+## Overview
 
-Geographic data quality issues are among the most common challenges in analytics and data engineering pipelines.
+GeoAssist is a reusable, configuration-driven framework that leverages **Databricks Foundation Models** to automatically detect and correct geographic data quality issues.
 
-A simple typo can lead to:
+Instead of maintaining thousands of mapping rules and lookup tables, GeoAssist uses **Llama 3.3 70B** to intelligently validate and standardize geographic values.
 
-* Broken joins across datasets
-* Duplicate entities in reporting
-* Inaccurate aggregations and dashboards
-* Poor customer and operational insights
+### Example
 
-### Example Data Quality Issues
-
-| Raw Value      | Correct Value  |
-| -------------- | -------------- |
-| Mumbay         | Mumbai         |
-| Chenai         | Chennai        |
-| New Yrok       | New York       |
+| Input | Output |
+|---------|---------|
+| Mumbay | Mumbai |
+| Chenai | Chennai |
+| New Yrok | New York |
 | Untied Kingdom | United Kingdom |
-| Germaany       | Germany        |
-
-Traditionally, resolving these issues requires:
-
-* Complex rule-based transformations
-* Large reference mapping tables
-* Continuous maintenance
-* Geographic domain expertise
-
-GeoAssist replaces these approaches with an AI-powered validation framework built on Databricks.
+| Germaany | Germany |
 
 ---
 
-## 🏗️ Solution Architecture
+## Architecture
 
 ```text
-                    ┌──────────────────┐
-                    │   Raw Geo Data   │
-                    └────────┬─────────┘
-                             │
-                             ▼
-                    ┌──────────────────┐
-                    │  Bronze Layer    │
-                    │ Raw Ingestion    │
-                    └────────┬─────────┘
-                             │
-                             ▼
-                    ┌──────────────────┐
-                    │ Geo Validator    │
-                    │ Llama 3.3 70B    │
-                    └────────┬─────────┘
-                             │
-                             ▼
-                    ┌──────────────────┐
-                    │ Confidence Score │
-                    └────────┬─────────┘
-                             │
-         ┌───────────────────┼───────────────────┐
-         ▼                   ▼                   ▼
- ┌─────────────┐    ┌─────────────┐    ┌─────────────┐
- │ High Conf.  │    │ Medium Conf.│    │ Low Conf.   │
- │ Auto Fix    │    │ Review      │    │ Manual QA   │
- └──────┬──────┘    └──────┬──────┘    └──────┬──────┘
+Raw Data
+   │
+   ▼
+Bronze Layer
+   │
+   ▼
+Geo Validator
+(Llama 3.3 70B)
+   │
+   ▼
+Confidence Scoring
+   │
+   ├── High Confidence
+   ├── Medium Confidence
+   └── Low Confidence
 
 ```
 
----
 
-## ✨ Key Features
+## 🚀 Quick Start
 
-### AI-Powered Geographic Validation
-
-Uses Databricks Foundation Models (Llama 3.3 70B) to:
-
-* Detect spelling errors
-* Identify invalid geographic values
-* Suggest standardized corrections
-* Generate confidence scores
-
-### ⚙️ Configuration-Driven
-
-No code changes required.
+### Configure Columns
 
 ```python
 TARGET_COLUMNS = [
@@ -96,106 +67,40 @@ TARGET_COLUMNS = [
 ]
 ```
 
-Simply update the target columns to match your source dataset.
-
-
-### Confidence-Based Routing
-
-Records are automatically classified into:
-
-| Confidence Level | Action                      |
-| ---------------- | --------------------------- |
-| High             | Auto-corrected and promoted |
-| Medium           | Sent for business review    |
-| Low              | Requires manual validation  |
-
-### 🔄 Reusable Across Domains
-
-GeoAssist can be applied to:
-
-* Customer Master Data
-* CRM Systems
-* Sales Platforms
-* Logistics Data
-* Supply Chain Data
-* Vendor Management Systems
-* Operational Data Stores
-
----
-## 🗂️ Sample Datasets
-
-The framework demonstration uses publicly available datasets.
-
-| Dataset          | Source      | Purpose                   |
-| ---------------- | ----------- | ------------------------- |
-| airports.dat.txt | OpenFlights | Raw airport location data |
-| cities500.txt    | GeoNames    | Geographic reference data |
-
-### Storage Location
-
-```text
-/Volumes/geo_assist/raw/geo_assist/
-```
-
----
-
-## 🔧 Getting Started
-
-### 1. Upload Your Dataset
-
-Place your file inside a Unity Catalog Volume.
-
-### 2. Configure Target Columns
+### Configure Input File
 
 ```python
-TARGET_COLUMNS = [
-    "city",
-    "state",
-    "country"
-]
+INPUT_FILE = "/Volumes/geo_assist/raw/geo_assist/airports.dat.txt"
 ```
 
-### 3. Update Input Path
-
-```python
-INPUT_FILE = "/Volumes/geo_assist/raw/your_file.csv"
-```
-
-### 4. Run the Pipeline
+### Run
 
 ```text
 01_bronze.ipynb
-        ↓
+      ↓
 validator.ipynb
-        ↓
-02_silver.ipynb
-        ↓
-03_gold.ipynb
-```
 
-That's it.
-
-GeoAssist automatically validates, standardizes, and publishes a trusted geographic dataset.
 
 ---
 
-## 📈 Example Output
+## 📊 Sample Output
 
-| Original Value | Suggested Value | Confidence |
-| -------------- | --------------- | ---------- |
-| Mumbay         | Mumbai          | 0.99       |
-| Chenai         | Chennai         | 0.98       |
-| Untied Kingdom | United Kingdom  | 0.97       |
-| New Yrok       | New York        | 0.95       |
+| Original | Suggested | Confidence |
+|-----------|-----------|------------|
+| Mumbay | Mumbai | 99% |
+| Chenai | Chennai | 98% |
+| New Yrok | New York | 95% |
 
 ---
 
 ## 🛠️ Technology Stack
 
-* Databricks
-* Apache Spark
-* Delta Lake
-* Unity Catalog
-* Databricks Foundation Models API
-* Llama 3.3 70B
-* Python
+- Databricks
+- Apache Spark
+- Delta Lake
+- Unity Catalog
+- Databricks Foundation Models
+- Llama 3.3 70B
+- Python
+
+---
