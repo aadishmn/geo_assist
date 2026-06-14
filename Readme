@@ -1,0 +1,57 @@
+# 🌍 GeoAssist — AI-Powered Geo Data Cleaning Framework on Databricks
+
+
+> **A reusable, config-driven framework that uses an LLM to detect and correct typos in geographic fields — city, state, country — directly inside Databricks. No domain expert required.**
+
+
+---
+ 
+## The Problem
+ 
+Every data engineer has seen this in raw data:
+ 
+| Raw (dirty) | Correct |
+|---|---|
+| `Mumbay` | `Mumbai` |
+| `Chenai` | `Chennai` |
+| `New Yrok` | `New York` |
+| `Untied Kingdom` | `United Kingdom` |
+| `Germaany` | `Germany` |
+ 
+These typos break downstream joins, corrupt dashboards, and usually require a domain expert or hundreds of regex rules to fix. This framework replaces all of that with a single LLM-backed Spark UDF.
+ 
+---
+ 
+##  What GeoAssist Does
+ 
+- Reads raw geo data from a **Unity Catalog Volume** (no data movement needed)
+- Uses **LLaMA 3.3 70B** via the Databricks Foundation Models API to validate each value
+- Returns a **confidence score + correction** for every row
+- Routes rows into **3 Silver tables** based on confidence
+- Publishes a final **Gold geo master table** ready for downstream joins
+- Works on **any dataset** — just change the column names in the config
+---
+
+## 📂 Project Structure
+ 
+```
+GeoAssist/
+├── validator.ipynb          # AI core — LLM prompts, GeoValidator class, smoke test
+├── 01_bronze.ipynb          # Ingest raw files + run AI validati
+```
+
+ 
+## 🗂️ Datasets Used
+ 
+| File | Source | Purpose |
+|---|---|---|
+| `airports.dat.txt` | [OpenFlights](https://openflights.org/data.html) | Raw dirty geo data (14,000+ airports) |
+| `cities500.txt` | [GeoNames](https://download.geonames.org/export/dump/) | Clean reference data for LLM context |
+ 
+Both files are stored in a **Unity Catalog Volume** at:
+```
+/Volumes/geo_assist/raw/geo_assist/
+```
+
+
+To adapt this to **your own dataset**: change `AIRPORTS_FILE` to your file path and update `TARGET_COLUMNS` to match your column names. That's it.
