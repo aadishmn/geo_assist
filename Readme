@@ -1,57 +1,201 @@
-##🌍 GeoAssist — AI-Powered Geo Data Cleaning Framework on Databricks
+# 🌍 GeoAssist — AI-Powered Geographic Data Quality Framework on Databricks
 
-
-> **A reusable, config-driven framework that uses an LLM to detect and correct typos in geographic fields — city, state, country — directly inside Databricks. No domain expert required.**
-
+> **GeoAssist is a reusable, configuration-driven framework that leverages Large Language Models (LLMs) to automatically detect, validate, and correct geographic data quality issues directly within Databricks.**
+>
+> Eliminate manual cleansing, reduce dependency on domain experts, and standardize geographic attributes such as cities, states, and countries at scale.
 
 ---
- 
-## The Problem
- 
-Every data engineer has seen this in raw data:
- 
-| Raw (dirty) | Correct |
-|---|---|
-| `Mumbay` | `Mumbai` |
-| `Chenai` | `Chennai` |
-| `New Yrok` | `New York` |
-| `Untied Kingdom` | `United Kingdom` |
-| `Germaany` | `Germany` |
- 
-These typos break downstream joins, corrupt dashboards, and usually require a domain expert or hundreds of regex rules to fix. This framework replaces all of that with a single LLM-backed Spark UDF.
- 
----
- 
-##  What GeoAssist Does
- 
-- Reads raw geo data from a **Unity Catalog Volume** (no data movement needed)
-- Uses **LLaMA 3.3 70B** via the Databricks Foundation Models API to validate each value
-- Returns a **confidence score + correction** for every row
-- Routes rows into **3 Silver tables** based on confidence
-- Publishes a final **Gold geo master table** ready for downstream joins
-- Works on **any dataset** — just change the column names in the config
+
+##  Why GeoAssist?
+
+Geographic data quality issues are among the most common challenges in analytics and data engineering pipelines.
+
+A simple typo can lead to:
+
+* Broken joins across datasets
+* Duplicate entities in reporting
+* Inaccurate aggregations and dashboards
+* Poor customer and operational insights
+
+### Example Data Quality Issues
+
+| Raw Value      | Correct Value  |
+| -------------- | -------------- |
+| Mumbay         | Mumbai         |
+| Chenai         | Chennai        |
+| New Yrok       | New York       |
+| Untied Kingdom | United Kingdom |
+| Germaany       | Germany        |
+
+Traditionally, resolving these issues requires:
+
+* Complex rule-based transformations
+* Large reference mapping tables
+* Continuous maintenance
+* Geographic domain expertise
+
+GeoAssist replaces these approaches with an AI-powered validation framework built on Databricks.
+
 ---
 
-## 📂 Project Structure
- 
-```
-GeoAssist/
-├── validator.ipynb          # AI core — LLM prompts, GeoValidator class, smoke test
-├── 01_bronze.ipynb          # Ingest raw files + run AI validati
+## 🏗️ Solution Architecture
+
+```text
+                    ┌──────────────────┐
+                    │   Raw Geo Data   │
+                    └────────┬─────────┘
+                             │
+                             ▼
+                    ┌──────────────────┐
+                    │  Bronze Layer    │
+                    │ Raw Ingestion    │
+                    └────────┬─────────┘
+                             │
+                             ▼
+                    ┌──────────────────┐
+                    │ Geo Validator    │
+                    │ Llama 3.3 70B    │
+                    └────────┬─────────┘
+                             │
+                             ▼
+                    ┌──────────────────┐
+                    │ Confidence Score │
+                    └────────┬─────────┘
+                             │
+         ┌───────────────────┼───────────────────┐
+         ▼                   ▼                   ▼
+ ┌─────────────┐    ┌─────────────┐    ┌─────────────┐
+ │ High Conf.  │    │ Medium Conf.│    │ Low Conf.   │
+ │ Auto Fix    │    │ Review      │    │ Manual QA   │
+ └──────┬──────┘    └──────┬──────┘    └──────┬──────┘
+
 ```
 
- 
-## 🗂️ Datasets Used
- 
-| File | Source | Purpose |
-|---|---|---|
-| `airports.dat.txt` | [OpenFlights](https://openflights.org/data.html) | Raw dirty geo data (14,000+ airports) |
-| `cities500.txt` | [GeoNames](https://download.geonames.org/export/dump/) | Clean reference data for LLM context |
- 
-Both files are stored in a **Unity Catalog Volume** at:
+---
+
+## ✨ Key Features
+
+### AI-Powered Geographic Validation
+
+Uses Databricks Foundation Models (Llama 3.3 70B) to:
+
+* Detect spelling errors
+* Identify invalid geographic values
+* Suggest standardized corrections
+* Generate confidence scores
+
+### ⚙️ Configuration-Driven
+
+No code changes required.
+
+```python
+TARGET_COLUMNS = [
+    "city",
+    "state",
+    "country"
+]
 ```
+
+Simply update the target columns to match your source dataset.
+
+
+### Confidence-Based Routing
+
+Records are automatically classified into:
+
+| Confidence Level | Action                      |
+| ---------------- | --------------------------- |
+| High             | Auto-corrected and promoted |
+| Medium           | Sent for business review    |
+| Low              | Requires manual validation  |
+
+### 🔄 Reusable Across Domains
+
+GeoAssist can be applied to:
+
+* Customer Master Data
+* CRM Systems
+* Sales Platforms
+* Logistics Data
+* Supply Chain Data
+* Vendor Management Systems
+* Operational Data Stores
+
+---
+## 🗂️ Sample Datasets
+
+The framework demonstration uses publicly available datasets.
+
+| Dataset          | Source      | Purpose                   |
+| ---------------- | ----------- | ------------------------- |
+| airports.dat.txt | OpenFlights | Raw airport location data |
+| cities500.txt    | GeoNames    | Geographic reference data |
+
+### Storage Location
+
+```text
 /Volumes/geo_assist/raw/geo_assist/
 ```
 
+---
 
-To adapt this to **your own dataset**: change `AIRPORTS_FILE` to your file path and update `TARGET_COLUMNS` to match your column names. That's it.
+## 🔧 Getting Started
+
+### 1. Upload Your Dataset
+
+Place your file inside a Unity Catalog Volume.
+
+### 2. Configure Target Columns
+
+```python
+TARGET_COLUMNS = [
+    "city",
+    "state",
+    "country"
+]
+```
+
+### 3. Update Input Path
+
+```python
+INPUT_FILE = "/Volumes/geo_assist/raw/your_file.csv"
+```
+
+### 4. Run the Pipeline
+
+```text
+01_bronze.ipynb
+        ↓
+validator.ipynb
+        ↓
+02_silver.ipynb
+        ↓
+03_gold.ipynb
+```
+
+That's it.
+
+GeoAssist automatically validates, standardizes, and publishes a trusted geographic dataset.
+
+---
+
+## 📈 Example Output
+
+| Original Value | Suggested Value | Confidence |
+| -------------- | --------------- | ---------- |
+| Mumbay         | Mumbai          | 0.99       |
+| Chenai         | Chennai         | 0.98       |
+| Untied Kingdom | United Kingdom  | 0.97       |
+| New Yrok       | New York        | 0.95       |
+
+---
+
+## 🛠️ Technology Stack
+
+* Databricks
+* Apache Spark
+* Delta Lake
+* Unity Catalog
+* Databricks Foundation Models API
+* Llama 3.3 70B
+* Python
